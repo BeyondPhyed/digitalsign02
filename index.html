@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서명 입력</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+        button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>서명 입력</h1>
+    <canvas id="signature-pad" width="500" height="300"></canvas>
+    <br>
+    <button id="clear-btn">지우기</button>
+    <button id="save-btn">저장하기</button>
+    <p>마우스나 터치를 이용해 서명을 입력하세요.</p>
+
+    <script>
+        // 캔버스 요소 선택
+        const canvas = document.getElementById('signature-pad');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+
+        // 마우스 좌표 또는 터치 좌표 구하는 함수
+        function getCoordinates(event) {
+            if (event.touches) {
+                // 터치 이벤트일 경우
+                return {
+                    x: event.touches[0].clientX - canvas.offsetLeft,
+                    y: event.touches[0].clientY - canvas.offsetTop
+                };
+            } else {
+                // 마우스 이벤트일 경우
+                return {
+                    x: event.clientX - canvas.offsetLeft,
+                    y: event.clientY - canvas.offsetTop
+                };
+            }
+        }
+
+        // 그리기 시작
+        function startDrawing(event) {
+            drawing = true;
+            const { x, y } = getCoordinates(event);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        // 그리기 중
+        function draw(event) {
+            if (!drawing) return;
+
+            const { x, y } = getCoordinates(event);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+
+        // 그리기 종료
+        function stopDrawing() {
+            drawing = false;
+            ctx.closePath();
+        }
+
+        // 지우기 버튼 클릭 시 캔버스 초기화
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 저장 버튼 클릭 시 캔버스를 이미지 파일로 저장
+        function saveCanvas() {
+            const dataURL = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataURL;
+            link.download = 'signature.png';
+            link.click();
+        }
+
+        // 마우스 이벤트 리스너
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+
+        // 터치 이벤트 리스너
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
+
+        // 버튼 이벤트 리스너
+        document.getElementById('clear-btn').addEventListener('click', clearCanvas);
+        document.getElementById('save-btn').addEventListener('click', saveCanvas);
+    </script>
+</body>
+</html>
